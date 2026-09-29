@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>CamilliaWin</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x64;ARM64</Platforms>
+    <!-- Default to the host architecture so `dotnet run` matches the core DLL built by scripts\build-core.ps1. -->
+    <HostArch>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant())</HostArch>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-$(HostArch)</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <Nullable>enable</Nullable>
+    <!-- Required by the UniFFI-generated bindings. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CoreGeneratedDir>$(MSBuildThisFileDirectory)..\..\Generated\</CoreGeneratedDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
+  </ItemGroup>
+
+  <!-- Produced by scripts\build-core.ps1 from the core submodule. -->
+  <ItemGroup>
+    <Compile Include="$(CoreGeneratedDir)camillia_core.cs" Link="Generated\camillia_core.cs" />
+    <None Include="$(CoreGeneratedDir)camillia_core.dll" Link="camillia_core.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="CheckCoreGenerated" BeforeTargets="BeforeBuild" Condition="!Exists('$(CoreGeneratedDir)camillia_core.cs') Or !Exists('$(CoreGeneratedDir)camillia_core.dll')">
+    <Error Text="Core bindings not found in $(CoreGeneratedDir). Run scripts\build-core.ps1 first." />
+  </Target>
+</Project>
